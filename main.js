@@ -29,66 +29,73 @@ const V2Factory = [
 
 const uFactoryAddress = '0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3'
 const uRouterAddress = '0xF491e7B69E4244ad4002BC14e878a34207E38c29'
+const WFTMAddress = '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83'
 
 require('dotenv').config()
 
 async function main() {
-    // console.log(address)
     // Connect to a network
     const provider = new ethers.providers.JsonRpcProvider(`https://rpc.ftm.tools/`)
     // Get gas price
     const gasPrice = await provider.getGasPrice()
     // Create wallet object
-    const wallet = ethers.Wallet(process.env.PRIVATE_KEY)
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY)
     // Get a signer
     const signer = wallet.connect(provider)
     // Look up the current block number
     let block = await provider.getBlockNumber()
     console.log('Block No# ', block)
 
-    // WDow
-    const contract = new ethers.Contract(cpieV2RouterAddr, V2Router, signer)
-    const token = new ethers.Contract(cpieTokenAddr, IERC20, signer)
-    const factory = new ethers.Contract(cpieFactoryAddr, V2Factory, signer)
+    const uFactory = new ethers.Contract(uFactoryAddress, V2Factory, signer)
+    const uRouter = new ethers.Contract(uRouterAddress, V2Router, signer)
+    const WFTM = new ethers.Contract(IERC20, WFTMAddress, signer)
 
-    let amt = 5002 - 1020
-    let _amount = ethers.utils.parseEther("20")
-    let _amountMin = ethers.utils.parseEther(amt.toString())
+    const amt = '10' // How much FTM are you willing to spend on new coins
+    const slippage = '0.05' // 5% slippage
 
-    // await token.approve(cpieV2RouterAddr, ethers.utils.parseEther("2"))
+    uFactory.events.PairCreated({}, async (error, event) => {
+        console.log(`New pair detected...\n`, event)
+    })
 
-    // Get pair LP for approval
-    let liquid = await factory.getPair(cpieTokenAddr, WETH)
-    // console.log(liquid)
-    await token.approve(liquid, ethers.utils.parseEther("20"))
-    // await token.approve(cpieV2RouterAddr, ethers.utils.parseUnits("20",))
+    // // WDow
+    // const contract = new ethers.Contract(cpieV2RouterAddr, V2Router, signer)
+    // const token = new ethers.Contract(cpieTokenAddr, IERC20, signer)
+    // const factory = new ethers.Contract(cpieFactoryAddr, V2Factory, signer)
 
-    let val = {
-        from: wallet.address,
-        value: ethers.utils.parseUnits("1", "ether"),//ethers.utils.parseEther("0.1"),
-        gasPrice: gasPrice,
-        gasLimit: ethers.utils.hexlify(3000000), // 100 gwei
-        nonce: provider.getTransactionCount(wallet.address, 'latest')
-    }
+    // let amt = 5002 - 1020
+    // let _amount = ethers.utils.parseEther("20")
+    // let _amountMin = ethers.utils.parseEther(amt.toString())
 
-    let timestamp = Math.round(new Date().getTime() / 1000)
-    timestamp += 3600
+    // // Get pair LP for approval
+    // let liquid = await factory.getPair(cpieTokenAddr, WETH)
+    // // console.log(liquid)
+    // await token.approve(liquid, ethers.utils.parseEther("20"))
 
-    let trans = await contract.addLiquidityETH(
-        cpieTokenAddr,
-        _amount,
-        0,
-        0,
-        wallet.address,
-        timestamp,
-        val
-    )
+    // let val = {
+    //     from: wallet.address,
+    //     value: ethers.utils.parseUnits("1", "ether"),//ethers.utils.parseEther("0.1"),
+    //     gasPrice: gasPrice,
+    //     gasLimit: ethers.utils.hexlify(3000000), // 100 gwei
+    //     nonce: provider.getTransactionCount(wallet.address, 'latest')
+    // }
 
-    // wait until the transaction is mined
-    let result = await trans.wait()
-    console.log(result)
-    // console.log(ethers.utils.parseUnits("0.1", "ether"))
-    // console.log(ethers.utils.parseEther("0.1"))
+    // let timestamp = Math.round(new Date().getTime() / 1000)
+    // timestamp += 3600
+
+    // let trans = await contract.addLiquidityETH(
+    //     cpieTokenAddr,
+    //     _amount,
+    //     0,
+    //     0,
+    //     wallet.address,
+    //     timestamp,
+    //     val
+    // )
+
+    // // wait until the transaction is mined
+    // let result = await trans.wait()
+    // console.log(result)
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
