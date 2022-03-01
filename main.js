@@ -24,7 +24,8 @@ const V2Router = [
 
 const V2Factory = [
     'function getPair(address token0, address token1) external view returns (address)',
-    'function allPairs(uint256 val) external view returns (address)'
+    'function allPairs(uint256 val) external view returns (address)',
+    'event PairCreated(address indexed token0, address indexed token1, address pair, uint)'
 ]
 
 const uFactoryAddress = '0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3'
@@ -48,12 +49,12 @@ async function main() {
 
     const uFactory = new ethers.Contract(uFactoryAddress, V2Factory, signer)
     const uRouter = new ethers.Contract(uRouterAddress, V2Router, signer)
-    const WFTM = new ethers.Contract(IERC20, WFTMAddress, signer)
+    const WFTM = new ethers.Contract(WFTMAddress, IERC20, signer)
 
     const amt = '10' // How much FTM are you willing to spend on new coins
     const slippage = '0.05' // 5% slippage
 
-    uFactory.events.PairCreated({}, async (error, event) => {
+    uFactory.event.PairCreated({}, async (error, event) => {
         console.log(`New pair detected...\n`, event)
     })
 
