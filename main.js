@@ -1,5 +1,6 @@
 
 const { ethers } = require("ethers")
+require('dotenv').config()
 
 const IERC20 = [
     'function name() external pure returns(string memory)',
@@ -32,8 +33,6 @@ const uFactoryAddress = '0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3'
 const uRouterAddress = '0xF491e7B69E4244ad4002BC14e878a34207E38c29'
 const WFTMAddress = '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83'
 
-require('dotenv').config()
-
 async function main() {
     // Connect to a network
     const provider = new ethers.providers.JsonRpcProvider(`https://rpc.ftm.tools/`)
@@ -54,9 +53,17 @@ async function main() {
     const amt = '10' // How much FTM are you willing to spend on new coins
     const slippage = '0.05' // 5% slippage
 
-    uFactory.event.PairCreated({}, async (error, event) => {
-        console.log(`New pair detected...\n`, event)
-    })
+    // uFactory.event.PairCreated({}, async (error, event) => {
+    //     console.log(`New pair detected...\n`, event)
+    // })
+
+    // event PairCreated(address indexed token0, address indexed token1, address pair, uint);
+    while (true) {
+        uFactory.on("PairCreated", (error, event) => {
+            console.log('The Event Listener: ', event)
+        })
+        console.log('Waiting => ')
+    }
 
     // // WDow
     // const contract = new ethers.Contract(cpieV2RouterAddr, V2Router, signer)
